@@ -6,6 +6,7 @@ import (
 	"io"
 	"sort"
 	"strings"
+	"time"
 )
 
 /*
@@ -39,6 +40,7 @@ type TaskList struct {
 
 	projectTasks map[string][]*Task
 	lastID       TaskId
+	timeGetter   TimeGetter
 }
 
 // NewTaskList initializes a TaskList on the given I/O descriptors.
@@ -48,7 +50,15 @@ func NewTaskList(in io.Reader, out io.Writer) *TaskList {
 		out:          out,
 		projectTasks: make(map[string][]*Task),
 		lastID:       0,
+		timeGetter:   time.Now,
 	}
+}
+
+type TimeGetter func() time.Time
+
+func (l *TaskList) WithCalendar(getter TimeGetter) *TaskList {
+	l.timeGetter = getter
+	return l
 }
 
 // Run runs the command loop of the task manager.
@@ -188,9 +198,42 @@ func (l *TaskList) nextID() TaskId {
 }
 
 func (l *TaskList) deadline(taskId string, date string) {
-
+	for project, tasks := range l.projectTasks {
+		fmt.Fprintf(l.out, "%s\n", project)
+		for _, task := range tasks {
+			id, err := newTaskIdFromString(taskId)
+			if err != nil {
+				panic("aaaah")
+			}
+			if task.id == id {
+				task.deadline, _ = time.Parse(time.DateOnly, date)
+			}
+		}
+	}
 }
 
 func (l *TaskList) today() {
+	// sort projects (to make output deterministic)
+	sortedProjects := make([]string, 0, len(l.projectTasks))
+	for project := range l.projectTasks {
+		sortedProjects = append(sortedProjects, project)
+	}
+	sort.Sort(sort.StringSlice(sortedProjects))
 
+	// show projects sequentially
+	for _, project := range sortedProjects {
+		tasks := l.projectTasks[project]
+		fmt.Fprintf(l.out, "%s\n", project)
+		for _, task := range tasks {
+			if task.deadline != l.timeGetter() {
+				continue
+			}
+			done := ' '
+			if task.IsDone() {
+				done = 'X'
+			}
+			fmt.Fprintf(l.out, "    [%c] %d: %s\n", done, task.GetID(), task.GetDescription())
+		}
+		fmt.Fprintln(l.out)
+	}
 }

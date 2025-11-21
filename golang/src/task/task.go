@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 type TaskId int64
@@ -22,6 +23,7 @@ type Task struct {
 	id          TaskId
 	description Description
 	done        bool
+	deadline    time.Time
 }
 
 // NewTask initializes a Task with the given ID, description and completion status.

@@ -6,6 +6,7 @@ import (
 	"io"
 	"sync"
 	"testing"
+	"time"
 )
 
 type scenarioTester struct {
@@ -28,12 +29,14 @@ func TestRun(t *testing.T) {
 		outReader:  outPR,
 		outScanner: bufio.NewScanner(outPR),
 	}
+	today := time.Date(2025, 11, 21, 0, 0, 0, 0, time.UTC)
+	timeGetter := func() time.Time { return today }
 
 	// run main program
 	var wg sync.WaitGroup
 	go func() {
 		wg.Add(1)
-		NewTaskList(inPR, outPW).Run()
+		NewTaskList(inPR, outPW).WithCalendar(timeGetter).Run()
 		outPW.Close()
 		wg.Done()
 	}()
@@ -94,6 +97,16 @@ func TestRun(t *testing.T) {
 	tester.execute("deadline 4 2020-03-18")
 	tester.execute("today")
 	tester.readLines([]string{})
+
+	tester.execute(fmt.Sprintf("deadline 8 %s", today.Format(time.DateOnly)))
+	tester.execute("today")
+	tester.readLines([]string{
+		"secret",
+		"",
+		"training",
+		"    [ ] 8: Interaction-Driven Design",
+		"",
+	})
 
 	fmt.Println("(quit)")
 	tester.execute("quit")
