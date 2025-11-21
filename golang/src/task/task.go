@@ -1,14 +1,31 @@
 package main
 
+import (
+	"fmt"
+	"strconv"
+)
+
+type TaskId int64
+
+func newTaskIdFromString(idString string) (TaskId, error) {
+	id, err := strconv.ParseInt(idString, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("Invalid ID \"%s\".\n", idString)
+	}
+	return TaskId(id), nil
+}
+
+type Description string
+
 // Task describes an elementary task.
 type Task struct {
-	id          int64
+	id          TaskId
 	description string
 	done        bool
 }
 
 // NewTask initializes a Task with the given ID, description and completion status.
-func NewTask(id int64, description string, done bool) *Task {
+func NewTask(id TaskId, description string, done bool) *Task {
 	return &Task{
 		id:          id,
 		description: description,
@@ -17,7 +34,7 @@ func NewTask(id int64, description string, done bool) *Task {
 }
 
 // GetID returns the task ID.
-func (t *Task) GetID() int64 {
+func (t *Task) GetID() TaskId {
 	return t.id
 }
 

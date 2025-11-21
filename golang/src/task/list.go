@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -39,7 +38,7 @@ type TaskList struct {
 	out io.Writer
 
 	projectTasks map[string][]*Task
-	lastID       int64
+	lastID       TaskId
 }
 
 // NewTaskList initializes a TaskList on the given I/O descriptors.
@@ -161,9 +160,9 @@ func (l *TaskList) uncheck(idString string) {
 }
 
 func (l *TaskList) setDone(idString string, done bool) {
-	id, err := strconv.ParseInt(idString, 10, 64)
+	id, err := newTaskIdFromString(idString)
 	if err != nil {
-		fmt.Fprintf(l.out, "Invalid ID \"%s\".\n", idString)
+		fmt.Fprintf(l.out, "%s", err)
 		return
 	}
 
@@ -179,7 +178,7 @@ func (l *TaskList) setDone(idString string, done bool) {
 	fmt.Fprintf(l.out, "Task with ID \"%d\" not found.\n", id)
 }
 
-func (l *TaskList) nextID() int64 {
+func (l *TaskList) nextID() TaskId {
 	l.lastID++
 	return l.lastID
 }
