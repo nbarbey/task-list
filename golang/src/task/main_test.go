@@ -90,6 +90,11 @@ func TestRun(t *testing.T) {
 		"",
 	})
 
+	fmt.Println("add deadline")
+	tester.execute("deadline 4 2020-03-18")
+	tester.execute("today")
+	tester.readLines([]string{})
+
 	fmt.Println("(quit)")
 	tester.execute("quit")
 

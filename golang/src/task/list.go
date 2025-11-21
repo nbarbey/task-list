@@ -80,6 +80,10 @@ func (l *TaskList) execute(cmdLine string) {
 		l.check(args[1])
 	case "uncheck":
 		l.uncheck(args[1])
+	case "deadline":
+		l.deadline(args[1], args[2])
+	case "today":
+		l.today()
 	case "help":
 		l.help()
 	default:
@@ -181,4 +185,12 @@ func (l *TaskList) setDone(idString string, done bool) {
 func (l *TaskList) nextID() TaskId {
 	l.lastID++
 	return l.lastID
+}
+
+func (l *TaskList) deadline(taskId string, date string) {
+
+}
+
+func (l *TaskList) today() {
+
 }
