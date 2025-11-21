@@ -20,12 +20,12 @@ type Description string
 // Task describes an elementary task.
 type Task struct {
 	id          TaskId
-	description string
+	description Description
 	done        bool
 }
 
 // NewTask initializes a Task with the given ID, description and completion status.
-func NewTask(id TaskId, description string, done bool) *Task {
+func NewTask(id TaskId, description Description, done bool) *Task {
 	return &Task{
 		id:          id,
 		description: description,
@@ -39,7 +39,7 @@ func (t *Task) GetID() TaskId {
 }
 
 // GetDescription returns the task description.
-func (t *Task) GetDescription() string {
+func (t *Task) GetDescription() Description {
 	return t.description
 }
 
