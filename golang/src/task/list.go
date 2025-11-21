@@ -148,7 +148,7 @@ func (l *TaskList) addTask(projectName, description string) {
 		fmt.Fprintf(l.out, "Could not find a project with the name \"%s\".\n", projectName)
 		return
 	}
-	l.projectTasks[projectName] = append(tasks, NewTask(l.nextID(), Description(description), false))
+	l.projectTasks[projectName] = append(tasks, NewTask(l.nextID(), description, false))
 }
 
 func (l *TaskList) check(idString string) {

@@ -25,10 +25,10 @@ type Task struct {
 }
 
 // NewTask initializes a Task with the given ID, description and completion status.
-func NewTask(id TaskId, description Description, done bool) *Task {
+func NewTask(id TaskId, description string, done bool) *Task {
 	return &Task{
 		id:          id,
-		description: description,
+		description: Description(description),
 		done:        done,
 	}
 }
