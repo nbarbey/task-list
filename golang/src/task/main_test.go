@@ -29,6 +29,7 @@ func TestRun(t *testing.T) {
 		outReader:  outPR,
 		outScanner: bufio.NewScanner(outPR),
 	}
+
 	today := time.Date(2025, 11, 21, 0, 0, 0, 0, time.UTC)
 	timeGetter := func() time.Time { return today }
 
