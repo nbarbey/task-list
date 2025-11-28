@@ -198,8 +198,7 @@ func (l *TaskList) nextID() TaskId {
 }
 
 func (l *TaskList) deadline(taskId string, date string) {
-	for project, tasks := range l.projectTasks {
-		fmt.Fprintf(l.out, "%s\n", project)
+	for _, tasks := range l.projectTasks {
 		for _, task := range tasks {
 			id, err := newTaskIdFromString(taskId)
 			if err != nil {

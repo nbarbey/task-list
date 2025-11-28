@@ -92,16 +92,26 @@ func TestRun(t *testing.T) {
 		"    [ ] 8: Interaction-Driven Design",
 		"",
 	})
+	fmt.Println("no deadline")
+	tester.execute("today")
+	tester.readLines([]string{"secrets",
+		"",
+		"training",
+		""})
 
 	fmt.Println("add deadline")
 	tester.execute("deadline 4 2020-03-18")
 	tester.execute("today")
-	tester.readLines([]string{})
+	tester.readLines([]string{"secrets",
+		"",
+		"training",
+		""})
 
+	fmt.Println("add another deadline")
 	tester.execute(fmt.Sprintf("deadline 8 %s", today.Format(time.DateOnly)))
 	tester.execute("today")
 	tester.readLines([]string{
-		"secret",
+		"secrets",
 		"",
 		"training",
 		"    [ ] 8: Interaction-Driven Design",
