@@ -221,13 +221,20 @@ func (l *TaskList) today() {
 	sort.Strings(sortedProjects)
 
 	// show projects sequentially
+	l.printSortedProjects(sortedProjects)
+}
+
+func (l *TaskList) printSortedProjects(sortedProjects []string) {
 	for _, project := range sortedProjects {
 		tasks := l.projectTasks[project]
 		fmt.Fprintf(l.out, "%s\n", project)
+		var filtered []*Task
 		for _, task := range tasks {
-			if task.deadline != l.timeGetter() {
-				continue
+			if filter(task, l.timeGetter) {
+				filtered = append(filtered, task)
 			}
+		}
+		for _, task := range filtered {
 			done := ' '
 			if task.IsDone() {
 				done = 'X'
@@ -236,4 +243,8 @@ func (l *TaskList) today() {
 		}
 		fmt.Fprintln(l.out)
 	}
+}
+
+func filter(task *Task, l TimeGetter) bool {
+	return task.deadline == l()
 }
