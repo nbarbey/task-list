@@ -34,12 +34,10 @@ func TestRun(t *testing.T) {
 
 	// run main program
 	var wg sync.WaitGroup
-	go func() {
-		wg.Add(1)
+	wg.Go(func() {
 		NewTaskList(inPR, outPW).WithCalendar(timeGetter).Run()
 		outPW.Close()
-		wg.Done()
-	}()
+	})
 
 	// run command-line scenario
 	fmt.Println("(show empty)")
@@ -164,14 +162,14 @@ func (t *scenarioTester) readLines(lines []string) {
 
 // discardLines reads lines from the scenario scanner, and drops them.
 // Used to empty buffers.
-func (t *scenarioTester) discardLines(n int) {
-	for i := 0; i < n; i++ {
-		if !t.outScanner.Scan() {
-			t.Error("Expected a line, no input found")
-			break
-		}
-	}
-	if err := t.outScanner.Err(); err != nil {
-		t.Fatalf("Could not read input: %v", err)
-	}
-}
+// func (t *scenarioTester) discardLines(n int) {
+// 	for range n {
+// 		if !t.outScanner.Scan() {
+// 			t.Error("Expected a line, no input found")
+// 			break
+// 		}
+// 	}
+// 	if err := t.outScanner.Err(); err != nil {
+// 		t.Fatalf("Could not read input: %v", err)
+// 	}
+// }

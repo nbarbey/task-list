@@ -121,7 +121,7 @@ func (l *TaskList) show() {
 	for project := range l.projectTasks {
 		sortedProjects = append(sortedProjects, project)
 	}
-	sort.Sort(sort.StringSlice(sortedProjects))
+	sort.Strings(sortedProjects)
 
 	// show projects sequentially
 	for _, project := range sortedProjects {
@@ -144,9 +144,10 @@ func (l *TaskList) add(args []string) {
 		return
 	}
 	projectName := args[1]
-	if args[0] == "project" {
+	switch args[0] {
+	case "project":
 		l.addProject(projectName)
-	} else if args[0] == "task" {
+	case "task":
 		description := strings.Join(args[2:], " ")
 		l.addTask(projectName, description)
 	}
@@ -217,7 +218,7 @@ func (l *TaskList) today() {
 	for project := range l.projectTasks {
 		sortedProjects = append(sortedProjects, project)
 	}
-	sort.Sort(sort.StringSlice(sortedProjects))
+	sort.Strings(sortedProjects)
 
 	// show projects sequentially
 	for _, project := range sortedProjects {
