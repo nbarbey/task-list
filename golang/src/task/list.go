@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"sort"
 	"strings"
 	"time"
 )
@@ -38,7 +37,7 @@ type TaskList struct {
 	in  io.Reader
 	out io.Writer
 
-	projectTasks map[string][]*Task
+	projectTasks Projects
 	lastID       TaskId
 	timeGetter   TimeGetter
 }
@@ -48,7 +47,7 @@ func NewTaskList(in io.Reader, out io.Writer) *TaskList {
 	return &TaskList{
 		in:           in,
 		out:          out,
-		projectTasks: make(map[string][]*Task),
+		projectTasks: make(Projects),
 		lastID:       0,
 		timeGetter:   time.Now,
 	}
@@ -116,26 +115,8 @@ func (l *TaskList) error(command string) {
 }
 
 func (l *TaskList) show() {
-	// sort projects (to make output deterministic)
-	sortedProjects := make([]string, 0, len(l.projectTasks))
-	for project := range l.projectTasks {
-		sortedProjects = append(sortedProjects, project)
-	}
-	sort.Strings(sortedProjects)
-
 	// show projects sequentially
-	for _, project := range sortedProjects {
-		tasks := l.projectTasks[project]
-		fmt.Fprintf(l.out, "%s\n", project)
-		for _, task := range tasks {
-			done := ' '
-			if task.IsDone() {
-				done = 'X'
-			}
-			fmt.Fprintf(l.out, "    [%c] %d: %s\n", done, task.GetID(), task.GetDescription())
-		}
-		fmt.Fprintln(l.out)
-	}
+	l.printSortedProjects(l.projectTasks.SortedProjects(), anyTask)
 }
 
 func (l *TaskList) add(args []string) {
@@ -213,24 +194,17 @@ func (l *TaskList) deadline(taskId string, date string) {
 }
 
 func (l *TaskList) today() {
-	// sort projects (to make output deterministic)
-	sortedProjects := make([]string, 0, len(l.projectTasks))
-	for project := range l.projectTasks {
-		sortedProjects = append(sortedProjects, project)
-	}
-	sort.Strings(sortedProjects)
-
 	// show projects sequentially
-	l.printSortedProjects(sortedProjects)
+	l.printSortedProjects(l.projectTasks.SortedProjects(), makeFilter(l.timeGetter()))
 }
 
-func (l *TaskList) printSortedProjects(sortedProjects []string) {
+func (l *TaskList) printSortedProjects(sortedProjects []string, filterer filterer) {
 	for _, project := range sortedProjects {
 		tasks := l.projectTasks[project]
 		fmt.Fprintf(l.out, "%s\n", project)
 		var filtered []*Task
 		for _, task := range tasks {
-			if filter(task, l.timeGetter) {
+			if filterer(task) {
 				filtered = append(filtered, task)
 			}
 		}
@@ -245,6 +219,14 @@ func (l *TaskList) printSortedProjects(sortedProjects []string) {
 	}
 }
 
-func filter(task *Task, l TimeGetter) bool {
-	return task.deadline == l()
+type filterer func(*Task) bool
+
+func makeFilter(date time.Time) filterer {
+	return func(task *Task) bool {
+		return task.deadline.Equal(date)
+	}
+}
+
+func anyTask(*Task) bool {
+	return true
 }
