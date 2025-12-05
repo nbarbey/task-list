@@ -77,11 +77,17 @@ func (l *TaskList) Run() {
 	}
 }
 
+type Command string
+
+const (
+	Show Command = "show"
+)
+
 func (l *TaskList) execute(cmdLine string) {
 	args := strings.Split(cmdLine, " ")
-	command := args[0]
+	command := Command(args[0])
 	switch command {
-	case "show":
+	case Show:
 		l.show()
 	case "add":
 		l.add(args[1:])
@@ -90,7 +96,9 @@ func (l *TaskList) execute(cmdLine string) {
 	case "uncheck":
 		l.uncheck(args[1])
 	case "deadline":
-		l.deadline(args[1], args[2])
+		taskID, _ := newTaskIdFromString(args[1])
+		deadline, _ := NewDeadlineFromString(args[2])
+		l.deadline(taskID, deadline)
 	case "today":
 		l.today()
 	case "help":
@@ -110,7 +118,7 @@ func (l *TaskList) help() {
   `)
 }
 
-func (l *TaskList) error(command string) {
+func (l *TaskList) error(command Command) {
 	fmt.Fprintf(l.out, "Unknown command \"%s\".\n", command)
 }
 
@@ -119,18 +127,25 @@ func (l *TaskList) show() {
 	l.printSortedProjects(l.projectTasks.SortedProjects(), anyTask)
 }
 
+type Category string
+
+const (
+	CategoryProject Category = "project"
+	CategoryTask    Category = "task"
+)
+
 func (l *TaskList) add(args []string) {
 	if len(args) < 2 {
 		fmt.Fprintln(l.out, "Missing parameters for \"add\" command.")
 		return
 	}
 	projectName := args[1]
-	switch args[0] {
-	case "project":
+	switch Category(args[0]) {
+	case CategoryProject:
 		l.addProject(projectName)
-	case "task":
+	case CategoryTask:
 		description := strings.Join(args[2:], " ")
-		l.addTask(projectName, description)
+		l.addTask(projectName, Description(description))
 	}
 }
 
@@ -138,13 +153,15 @@ func (l *TaskList) addProject(name string) {
 	l.projectTasks[name] = make([]*Task, 0)
 }
 
-func (l *TaskList) addTask(projectName, description string) {
+func (l *TaskList) addTask(projectName string, description Description) TaskId {
 	tasks, ok := l.projectTasks[projectName]
 	if !ok {
 		fmt.Fprintf(l.out, "Could not find a project with the name \"%s\".\n", projectName)
-		return
+		return 0
 	}
-	l.projectTasks[projectName] = append(tasks, NewTask(l.nextID(), description, false))
+	id := l.nextID()
+	l.projectTasks[projectName] = append(tasks, NewTask(id, description, false))
+	return id
 }
 
 func (l *TaskList) check(idString string) {
@@ -179,15 +196,25 @@ func (l *TaskList) nextID() TaskId {
 	return l.lastID
 }
 
-func (l *TaskList) deadline(taskId string, date string) {
+type Deadline struct{ time.Time }
+
+func NewDeadline(y, m, d int) Deadline {
+	return Deadline{time.Date(y, time.Month(m), d, 0, 0, 0, 0, time.UTC)}
+}
+
+func NewDeadlineFromString(date string) (Deadline, error) {
+	deadline, err := time.Parse(time.DateOnly, date)
+	if err != nil {
+		return Deadline{}, err
+	}
+	return Deadline{deadline}, nil
+}
+
+func (l *TaskList) deadline(taskId TaskId, deadline Deadline) {
 	for _, tasks := range l.projectTasks {
 		for _, task := range tasks {
-			id, err := newTaskIdFromString(taskId)
-			if err != nil {
-				panic("aaaah")
-			}
-			if task.id == id {
-				task.deadline, _ = time.Parse(time.DateOnly, date)
+			if task.id == taskId {
+				task.deadline = deadline
 			}
 		}
 	}
