@@ -32,11 +32,12 @@ func TestRun(t *testing.T) {
 
 	today := time.Date(2025, 11, 21, 0, 0, 0, 0, time.UTC)
 	timeGetter := func() time.Time { return today }
+	taskList := NewTaskList(inPR, outPW).WithCalendar(timeGetter)
 
 	// run main program
 	var wg sync.WaitGroup
 	wg.Go(func() {
-		NewTaskList(inPR, outPW).WithCalendar(timeGetter).Run()
+		taskList.Run()
 		outPW.Close()
 	})
 
@@ -118,15 +119,19 @@ func TestRun(t *testing.T) {
 		"",
 	})
 
-	// fmt.Println("another day, other deadlines")
-	// tester.execute("today")
-	// tester.readLines([]string{
-	// 	"secrets",
-	// 	"    [X] 1: Eat more donuts.",
-	// 	"",
-	// 	"training",
-	// 	"",
-	// })
+	fmt.Println("another day, other deadlines")
+	taskList.WithCalendar(func() time.Time {
+		return time.Date(2024, 6, 7, 0, 0, 0, 0, time.UTC)
+	})
+
+	tester.execute("today")
+	tester.readLines([]string{
+		"secrets",
+		"    [X] 1: Eat more donuts.",
+		"",
+		"training",
+		"",
+	})
 
 	fmt.Println("(quit)")
 	tester.execute("quit")
