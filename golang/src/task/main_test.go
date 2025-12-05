@@ -99,6 +99,7 @@ func TestRun(t *testing.T) {
 		""})
 
 	fmt.Println("add deadline")
+	tester.execute("deadline 1 2024-06-07")
 	tester.execute("deadline 4 2020-03-18")
 	tester.execute("today")
 	tester.readLines([]string{"secrets",
@@ -116,6 +117,16 @@ func TestRun(t *testing.T) {
 		"    [ ] 8: Interaction-Driven Design",
 		"",
 	})
+
+	// fmt.Println("another day, other deadlines")
+	// tester.execute("today")
+	// tester.readLines([]string{
+	// 	"secrets",
+	// 	"    [X] 1: Eat more donuts.",
+	// 	"",
+	// 	"training",
+	// 	"",
+	// })
 
 	fmt.Println("(quit)")
 	tester.execute("quit")
