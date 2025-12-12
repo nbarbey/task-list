@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 )
 
@@ -47,6 +48,15 @@ func (t *Task) GetDescription() Description {
 // IsDone returns whether the task is done or not.
 func (t *Task) IsDone() bool {
 	return t.done
+}
+
+// Print prints the task as a string to the writer
+func (t *Task) Print(w io.Writer) {
+	done := ' '
+	if t.IsDone() {
+		done = 'X'
+	}
+	fmt.Fprintf(w, "    [%c] %d: %s\n", done, t.GetID(), t.GetDescription())
 }
 
 // SetDone changes the completion status of the task.

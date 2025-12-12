@@ -24,11 +24,7 @@ func (p Projects) SortedProjects() []string {
 
 func (p Project) Print(w io.Writer) {
 	for _, task := range p {
-		done := ' '
-		if task.IsDone() {
-			done = 'X'
-		}
-		fmt.Fprintf(w, "    [%c] %d: %s\n", done, task.GetID(), task.GetDescription())
+		task.Print(w)
 	}
 	fmt.Fprintln(w)
 }
