@@ -52,11 +52,16 @@ func (t *Task) IsDone() bool {
 
 // Print prints the task as a string to the writer
 func (t *Task) Print(w io.Writer) {
+	fmt.Fprint(w, t.Sprint())
+}
+
+// Spring returns a string representation of the Task
+func (t *Task) Sprint() string {
 	done := ' '
 	if t.IsDone() {
 		done = 'X'
 	}
-	fmt.Fprintf(w, "    [%c] %d: %s\n", done, t.GetID(), t.GetDescription())
+	return fmt.Sprintf("    [%c] %d: %s\n", done, t.GetID(), t.GetDescription())
 }
 
 // SetDone changes the completion status of the task.
