@@ -124,7 +124,7 @@ func (l *TaskList) error(command Command) {
 
 func (l *TaskList) show() {
 	// show projects sequentially
-	l.printSortedProjects(l.projectTasks.SortedProjects(), anyTask)
+	l.printSortedProjects(anyTask)
 }
 
 type Category string
@@ -222,33 +222,26 @@ func (l *TaskList) deadline(taskId TaskId, deadline Deadline) {
 
 func (l *TaskList) today() {
 	// show projects sequentially
-	l.printSortedProjects(l.projectTasks.SortedProjects(), makeFilter(l.timeGetter()))
+	l.printSortedProjects(makeFilter(l.timeGetter()))
 }
 
-func (l *TaskList) printSortedProjects(sortedProjects []string, filterer filterer) {
-	for _, project := range sortedProjects {
-		tasks := l.projectTasks[project]
-		fmt.Fprintf(l.out, "%s\n", project)
-		var filtered []*Task
-		for _, task := range tasks {
-			if filterer(task) {
-				filtered = append(filtered, task)
-			}
-		}
-		for _, task := range filtered {
-			done := ' '
-			if task.IsDone() {
-				done = 'X'
-			}
-			fmt.Fprintf(l.out, "    [%c] %d: %s\n", done, task.GetID(), task.GetDescription())
-		}
-		fmt.Fprintln(l.out)
+func (l *TaskList) printSortedProjects(filterer filtererFunc) {
+	for _, project := range l.projectTasks.SortedProjects() {
+		l.printProject(project, filterer)
 	}
 }
 
-type filterer func(*Task) bool
+func (l *TaskList) printProject(project string, filterer filtererFunc) {
+	fmt.Fprintf(l.out, "%s\n", project)
 
-func makeFilter(date time.Time) filterer {
+	l.projectTasks[project].
+		Filter(filterer).
+		Print(l.out)
+}
+
+type filtererFunc func(*Task) bool
+
+func makeFilter(date time.Time) filtererFunc {
 	return func(task *Task) bool {
 		return task.deadline.Equal(date)
 	}
