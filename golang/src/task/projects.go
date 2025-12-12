@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"sort"
@@ -30,6 +31,12 @@ func (p Project) Print(w io.Writer) {
 		fmt.Fprintf(w, "    [%c] %d: %s\n", done, task.GetID(), task.GetDescription())
 	}
 	fmt.Fprintln(w)
+}
+
+func (p Project) Sprint() string {
+	var buffer bytes.Buffer
+	p.Print(&buffer)
+	return buffer.String()
 }
 
 func (p Project) Filter(filterer filtererFunc) Project {
