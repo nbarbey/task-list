@@ -12,6 +12,12 @@ Only a `go` binary is required. Get it through your distribution repositories or
 
 (Calls `go test` after setting up `GOPATH`)
 
+To surveil the file changes and run the tests automatically:
+
+```sh
+go run github.com/mickamy/gotcha@latest watch
+```
+
 #### Run the application
 
 ```sh
