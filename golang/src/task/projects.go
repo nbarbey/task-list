@@ -3,11 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"sort"
 )
-
-type Project []*Task
 
 type Projects map[string]Project
 
@@ -22,25 +19,16 @@ func (p Projects) SortedProjects() []string {
 	return sortedProjects
 }
 
-func (p Project) Print(w io.Writer) {
-	for _, task := range p {
-		task.Print(w)
-	}
-	fmt.Fprintln(w)
-}
+func (p Projects) String() string {
+	var out string
+	for _, projectName := range p.SortedProjects() {
+		out += fmt.Sprintf("%s\n", projectName)
 
-func (p Project) Sprint() string {
-	var buffer bytes.Buffer
-	p.Print(&buffer)
-	return buffer.String()
-}
-
-func (p Project) Filter(filterer filtererFunc) Project {
-	var filtered []*Task
-	for _, task := range p {
-		if filterer(task) {
-			filtered = append(filtered, task)
-		}
+		var b bytes.Buffer
+		project := p[projectName]
+		project.Print(&b)
+		out += b.String()
 	}
-	return filtered
+
+	return out
 }

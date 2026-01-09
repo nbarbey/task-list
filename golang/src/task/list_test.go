@@ -22,7 +22,7 @@ func TestTaskList_today(t *testing.T) {
 	taskID, err := taskList.addTask("secrets", "Eat more donuts.")
 	require.NoError(t, err)
 	taskList.deadline(taskID, NewDeadline(2024, 6, 7))
-	taskList.today()
+	todayProjects := taskList.today()
 
-	assert.Equal(t, "secrets\n    [ ] 1: Eat more donuts.\n\n", out.String())
+	assert.Equal(t, "secrets\n    [ ] 1: Eat more donuts.\n\n", todayProjects.String())
 }

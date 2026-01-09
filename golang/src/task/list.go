@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"strings"
@@ -60,53 +59,11 @@ func (l *TaskList) WithCalendar(getter TimeGetter) *TaskList {
 	return l
 }
 
-// Run runs the command loop of the task manager.
-// Sequentially executes any given command, until the user types the Quit message.
-func (l *TaskList) Run() {
-	scanner := bufio.NewScanner(l.in)
-
-	fmt.Fprint(l.out, prompt)
-	for scanner.Scan() {
-		cmdLine := scanner.Text()
-		if cmdLine == Quit {
-			return
-		}
-
-		l.execute(cmdLine)
-		fmt.Fprint(l.out, prompt)
-	}
-}
-
 type Command string
 
 const (
 	Show Command = "show"
 )
-
-func (l *TaskList) execute(cmdLine string) {
-	args := strings.Split(cmdLine, " ")
-	command := Command(args[0])
-	switch command {
-	case Show:
-		l.show()
-	case "add":
-		l.add(args[1:])
-	case "check":
-		l.check(args[1])
-	case "uncheck":
-		l.uncheck(args[1])
-	case "deadline":
-		taskID, _ := newTaskIdFromString(args[1])
-		deadline, _ := NewDeadlineFromString(args[2])
-		l.deadline(taskID, deadline)
-	case "today":
-		l.today()
-	case "help":
-		l.help()
-	default:
-		l.error(command)
-	}
-}
 
 func (l *TaskList) help() {
 	fmt.Fprintln(l.out, `Commands:
@@ -217,18 +174,32 @@ func (l *TaskList) deadline(taskId TaskId, deadline Deadline) {
 	}
 }
 
-func (l *TaskList) today() {
-	// show projects sequentially
-	l.printSortedProjects(makeFilter(l.timeGetter()))
+func (l *TaskList) today() Projects {
+	return l.sortedProjects(makeFilter(l.timeGetter()))
 }
 
-func (l *TaskList) printSortedProjects(filterer filtererFunc) {
+func (l *TaskList) sortedProjects(filterer taskFilterer) Projects {
+	p := make(Projects)
+	for _, projectName := range l.projectTasks.SortedProjects() {
+		p[projectName] = l.project(projectName, filterer)
+	}
+	return p
+}
+
+func (l *TaskList) project(project string, filterer taskFilterer) Project {
+	fmt.Fprintf(l.out, "%s\n", project)
+
+	return l.projectTasks[project].
+		Filter(filterer)
+}
+
+func (l *TaskList) printSortedProjects(filterer taskFilterer) {
 	for _, project := range l.projectTasks.SortedProjects() {
 		l.printProject(project, filterer)
 	}
 }
 
-func (l *TaskList) printProject(project string, filterer filtererFunc) {
+func (l *TaskList) printProject(project string, filterer taskFilterer) {
 	fmt.Fprintf(l.out, "%s\n", project)
 
 	l.projectTasks[project].
@@ -236,9 +207,9 @@ func (l *TaskList) printProject(project string, filterer filtererFunc) {
 		Print(l.out)
 }
 
-type filtererFunc func(*Task) bool
+type taskFilterer func(*Task) bool
 
-func makeFilter(date time.Time) filtererFunc {
+func makeFilter(date time.Time) taskFilterer {
 	return func(task *Task) bool {
 		return task.deadline.Equal(date)
 	}

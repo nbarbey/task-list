@@ -3,8 +3,6 @@
 // and then scans and executes user commands.
 package main
 
-import "os"
-
 func main() {
-	NewTaskList(os.Stdin, os.Stdout).Run()
+	// NewTaskList(os.Stdin, os.Stdout).Run()
 }
