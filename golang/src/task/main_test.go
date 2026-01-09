@@ -32,7 +32,7 @@ func TestRun(t *testing.T) {
 
 	today := time.Date(2025, 11, 21, 0, 0, 0, 0, time.UTC)
 	timeGetter := func() time.Time { return today }
-	taskList := NewTaskList(inPR, outPW).WithCalendar(timeGetter)
+	taskList := NewHandler(inPR, outPW).WithCalendar(timeGetter)
 
 	// run main program
 	var wg sync.WaitGroup

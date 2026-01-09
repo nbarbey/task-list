@@ -134,34 +134,31 @@ const (
 	CategoryTask    Category = "task"
 )
 
-func (l *TaskList) add(args []string) {
-	if len(args) < 2 {
-		fmt.Fprintln(l.out, "Missing parameters for \"add\" command.")
-		return
-	}
+func (l *TaskList) add(args []string) error {
 	projectName := args[1]
 	switch Category(args[0]) {
 	case CategoryProject:
 		l.addProject(projectName)
 	case CategoryTask:
 		description := strings.Join(args[2:], " ")
-		l.addTask(projectName, Description(description))
+		_, err := l.addTask(projectName, Description(description))
+		return err
 	}
+	return nil
 }
 
 func (l *TaskList) addProject(name string) {
 	l.projectTasks[name] = make([]*Task, 0)
 }
 
-func (l *TaskList) addTask(projectName string, description Description) TaskId {
+func (l *TaskList) addTask(projectName string, description Description) (TaskId, error) {
 	tasks, ok := l.projectTasks[projectName]
 	if !ok {
-		fmt.Fprintf(l.out, "Could not find a project with the name \"%s\".\n", projectName)
-		return 0
+		return 0, fmt.Errorf("Could not find a project with the name \"%s\".\n", projectName)
 	}
 	id := l.nextID()
 	l.projectTasks[projectName] = append(tasks, NewTask(id, description, false))
-	return id
+	return id, nil
 }
 
 func (l *TaskList) check(idString string) {

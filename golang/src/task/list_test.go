@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTaskList_today(t *testing.T) {
@@ -18,7 +19,8 @@ func TestTaskList_today(t *testing.T) {
 	})
 
 	taskList.addProject("secrets")
-	taskID := taskList.addTask("secrets", "Eat more donuts.")
+	taskID, err := taskList.addTask("secrets", "Eat more donuts.")
+	require.NoError(t, err)
 	taskList.deadline(taskID, NewDeadline(2024, 6, 7))
 	taskList.today()
 
